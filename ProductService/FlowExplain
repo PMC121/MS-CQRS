@@ -1,0 +1,65 @@
+command driven flow
+
+1) In controller initialize command specific object after autowire command gateway
+  use command gateway send methode and pass command object
+  
+2) Create command class, entity class, model class, aggregater class
+
+3) in aggregator class annoted with @Aggregate and add @AggregateIdentifier on unique id create constructor which is accept the command which was pass by controller
+   then perform the bean copy property with specific event class and call AggregateLifecycle.apply(productCreateEvent);
+   and constructor annoted with @commandhandler
+   
+4) In agregator class create method on method which annoted by @EventSourcingHandler.
+this method accept specific event and intialize local variable class level which is same as model class
+
+5) create JPA repository and @Eventhandler class
+in event handler class autowire repository and create local method for DB operation with annoted by @EventHandler
+
+
+
+Query driven flow
+
+1) create model class
+2) create rest controller inside controller autowire querygateway and  http method call queryGateway.
+
+ex:- List<ProductQueryModel> productsList=queryGateway
+				.query(findProductsQuery, ResponseTypes.multipleInstancesOf(ProductQueryModel.class)).join();
+				
+3)create entity and repository
+
+4) create event handler class and component and autowire repository 
+create method with annoted as @EventHandler and perform db operation
+
+
+if same thread perform diffrent DB opetaion for same event then add @ProcessingGroup("product-group")
+and enabled axon.eventhandling.processors.product-group.mode=subscribing in property file		
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://host.docker.internal:56124/api/v1/product/
+
+{
+"title":"I-Phone 2",
+"price":1234,
+"quantity":3
+}
+
+
+
+
+http://host.docker.internal:59502/api/v1/orders/
+{
+"productId":"f241af45-4854-43f4-95bc-ab54da338a29",
+"quantity":1,
+"addressId":"afbb5881-a872-4d13-993c-faeb8350eea5"
+}
